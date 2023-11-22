@@ -25,4 +25,29 @@ BEGIN
 END;
 /
 
--- Import Schema Using Oracle Data Pump --
+-- Import Schema Using Oracle Data Pump and Remap Schema --
+DECLARE
+  v_hdnl NUMBER;
+BEGIN
+  v_hdnl := DBMS_DATAPUMP.OPEN( 
+    operation => 'IMPORT', 
+    job_mode  => 'SCHEMA', 
+    job_name  => null);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'VETMXPRD_22112023.dmp', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_dump_file);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'VETMXPRE_22112023_imp.log', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_log_file);
+  DBMS_DATAPUMP.metadata_remap(
+    handle => v_hdnl, 
+    name => 'REMAP_SCHEMA', 
+    old_value => 'VETMXPRD', 
+    value => 'VETMXPRE'); 
+  DBMS_DATAPUMP.START_JOB(v_hdnl);
+END;
+/
