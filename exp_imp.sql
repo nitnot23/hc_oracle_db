@@ -26,6 +26,7 @@ END;
 /
 
 -- Import Schema Using Oracle Data Pump and Remap Schema --
+
 DECLARE
   v_hdnl NUMBER;
 BEGIN
