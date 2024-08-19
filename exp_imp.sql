@@ -80,3 +80,45 @@ BEGIN
   DBMS_DATAPUMP.START_JOB(v_hdnl);
 END;
 /
+
+-- Import Schema Using Oracle Data Pump, Remap Schema and Remap Tablespace --
+DECLARE
+  v_hdnl NUMBER;
+BEGIN
+  v_hdnl := DBMS_DATAPUMP.OPEN( 
+    operation => 'IMPORT', 
+    job_mode  => 'SCHEMA', 
+    job_name  => null);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'VET_MX76_PROD_SERCO_1_12082024.dmp', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_dump_file);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'MAXTST_08192024_imp.log', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_log_file);
+  DBMS_DATAPUMP.metadata_remap(
+    handle => v_hdnl, 
+    name => 'REMAP_SCHEMA', 
+    old_value => 'VET_MX76_PROD_SERCO_1', 
+    value => 'MAXTST'); 
+  DBMS_DATAPUMP.metadata_remap(
+    handle => v_hdnl, 
+    name => 'REMAP_TABLESPACE', 
+    old_value => 'VET_MX76_PROD_SERCO_D', 
+    value => 'MAXDATA'); 
+  DBMS_DATAPUMP.metadata_remap(
+    handle => v_hdnl, 
+    name => 'REMAP_TABLESPACE', 
+    old_value => 'VET_MX76_PROD_SERCO_T', 
+    value => 'MAXTEMP'); 
+  DBMS_DATAPUMP.metadata_remap(
+    handle => v_hdnl, 
+    name => 'REMAP_TABLESPACE', 
+    old_value => 'VET_MX76_PROD_SERCO_I', 
+    value => 'MAXINDEX'); 
+  DBMS_DATAPUMP.START_JOB(v_hdnl);
+END;
+/
