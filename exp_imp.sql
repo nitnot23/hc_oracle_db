@@ -53,6 +53,30 @@ BEGIN
 END;
 /
 
+-- Import Table Using Oracle Data Pump --
+DECLARE
+  v_hdnl NUMBER;
+BEGIN
+  v_hdnl := DBMS_DATAPUMP.OPEN( 
+    operation => 'IMPORT', 
+    job_mode  => 'TABLE', 
+    job_name  => null);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'NC_SDS_INSTANCE_24072025.dmp',
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_dump_file );
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'NC_SDS_INSTANCE_24072025_imp.log', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_log_file);
+  DBMS_DATAPUMP.METADATA_FILTER(v_hdnl,'SCHEMA_EXPR','IN (''COGNOS_CS'')');
+  DBMS_DATAPUMP.METADATA_FILTER(v_hdnl,'NAME_EXPR','IN (''NC_SDS_INSTANCE'')');
+  DBMS_DATAPUMP.START_JOB(v_hdnl);
+END;
+/ 
+  
 -- Import Schema Using Oracle Data Pump and Remap Schema --
 
 DECLARE
