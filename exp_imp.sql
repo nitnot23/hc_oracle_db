@@ -146,3 +146,31 @@ BEGIN
   DBMS_DATAPUMP.START_JOB(v_hdnl);
 END;
 /
+
+-- Import Schema Using Oracle Data Pump, Remap Schema and Metadata Only --
+DECLARE
+  v_hdnl NUMBER;
+BEGIN
+  v_hdnl := DBMS_DATAPUMP.OPEN( 
+    operation => 'IMPORT', 
+    job_mode  => 'SCHEMA', 
+    job_name  => null);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'MX_SCHEMA_PROD_20251025.dmp', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_dump_file);
+  DBMS_DATAPUMP.ADD_FILE( 
+    handle    => v_hdnl, 
+    filename  => 'mx_metadata_imp.log', 
+    directory => 'DATA_PUMP_DIR', 
+    filetype  => dbms_datapump.ku$_file_type_log_file);
+  DBMS_DATAPUMP.metadata_remap(
+    handle => v_hdnl, 
+    name => 'REMAP_SCHEMA', 
+    old_value => 'SGMXPRD', 
+    value => 'MAXIMO');
+  DBMS_DATAPUMP.DATA_FILTER(v_hdnl,'INCLUDE_ROWS','0');
+  DBMS_DATAPUMP.START_JOB(v_hdnl);
+END;
+/
