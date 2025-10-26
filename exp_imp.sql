@@ -53,6 +53,32 @@ BEGIN
 END;
 /
 
+-- Export Partial Using Oracle Data Pump --
+DECLARE
+  hdnl NUMBER;
+BEGIN
+  hdnl := DBMS_DATAPUMP.OPEN(
+    operation => 'EXPORT',
+    job_mode  => 'SCHEMA',
+    job_name  => 'null');
+  DBMS_DATAPUMP.ADD_FILE(
+    handle    => hdnl,
+    filename  => 'rpt_tbl_26102025.dmp',
+    directory => 'DATA_PUMP_DIR',
+    filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_DUMP_FILE);
+  DBMS_DATAPUMP.ADD_FILE(
+    handle    => hdnl,
+    filename  => 'rpt_tbl_26102025_exp.log',
+    directory => 'DATA_PUMP_DIR',
+    filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_LOG_FILE);
+  DBMS_DATAPUMP.METADATA_FILTER(hdnl, 'SCHEMA_EXPR', 'IN (''SGMXPRD'')');
+  DBMS_DATAPUMP.METADATA_FILTER(hdnl, 'NAME_EXPR', 'IN (''COGHIST_PLNDUTIL'', ''COGHIST_LOGINCIDENT'',''COG_METRICHIST'',''TIME_CALENDAR_DIM'')', 'TABLE');
+  DBMS_DATAPUMP.METADATA_FILTER(hdnl, 'NAME_EXPR', 'IN (''SG_LABORHRS'', ''SG_LABWO'',''SG_SHIFT'',''TIMEINAWCLPO'',''TIMEINDEFERRED'',''V_BUILDINGCODE_LKUP'')', 'MATERIALIZED_VIEW');
+  DBMS_DATAPUMP.METADATA_FILTER(hdnl, 'NAME_EXPR', 'IN (''ENG_PLND_UTIL'')', 'PROCEDURE');
+  DBMS_DATAPUMP.START_JOB(hdnl);
+END;
+/
+
 -- Import Table Using Oracle Data Pump --
 DECLARE
   v_hdnl NUMBER;
