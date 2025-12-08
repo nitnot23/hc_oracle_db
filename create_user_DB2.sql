@@ -1,0 +1,15 @@
+call rdsadmin.add_user(
+    'TIAGO_CORREIA',
+    'ahCiveNWkx2AXRhw',
+    'project_team');
+
+call rdsadmin.list_users()
+
+SELECT 'GRANT SELECT ON TABLE '||TABSCHEMA||'.'||TABNAME||' TO USER TIAGO_CORREIA;'
+FROM SYSCAT.TABLES
+WHERE TYPE = 'T' AND TABSCHEMA NOT LIKE 'SYS%'
+ORDER BY TABSCHEMA, TABNAME;
+
+SELECT *
+    FROM SYSCAT.TABAUTH
+    WHERE GRANTEE = 'JMENDES'
