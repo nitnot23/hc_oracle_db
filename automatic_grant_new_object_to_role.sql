@@ -1,4 +1,4 @@
-1. If the objects had been existed run this command:
+--1. If the objects had been existed run this command:
 BEGIN
     FOR r IN (
         SELECT object_name, object_type
@@ -36,7 +36,7 @@ BEGIN
 END;
 /
 
-2. Then create this trigger
+--2. Then create this trigger
 CREATE OR REPLACE TRIGGER MAXIMO_AUTO_GRANT
 AFTER CREATE ON DATABASE
 DECLARE
@@ -82,7 +82,7 @@ EXCEPTION
 END;
 /
 
-3. Enable the trigger
+--3. Enable the trigger
 ALTER TRIGGER MAXIMO_AUTO_GRANT ENABLE;
 
-4. Grant the roles to the user
+--4. Grant the roles to the user
