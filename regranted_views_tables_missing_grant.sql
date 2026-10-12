@@ -86,17 +86,17 @@ ORDER BY 1, 2, 3, 4;
 
 
 SELECT t.owner,
-               t.table_name
-        FROM all_tables t
-        LEFT JOIN all_tab_privs p
-               ON p.table_schema = t.owner
-              AND p.table_name   = t.table_name
-              AND p.grantee      = 'MAXIMO_READ_ONLY'
-              AND p.privilege    = 'SELECT'
-              AND p.table_name not like 'DR$%'
-        WHERE t.owner = 'MAXIMO'
-          AND p.table_name IS NULL
-        ORDER BY t.table_name;
+       t.table_name
+FROM dba_tables t
+LEFT JOIN dba_tab_privs p
+       ON p.owner = t.owner
+      AND p.table_name   = t.table_name
+      AND p.grantee      = 'MAXIMO_READ_ONLY'
+      AND p.privilege    = 'SELECT'
+WHERE t.owner = 'MAXIMO'
+  AND t.table_name NOT LIKE 'DR$%'
+  AND p.table_name IS NULL
+ORDER BY t.table_name;
 
 
 SET SERVEROUTPUT ON;
@@ -136,7 +136,5 @@ BEGIN
                 );
         END;
     END LOOP;
-END;
-/
 END;
 /
