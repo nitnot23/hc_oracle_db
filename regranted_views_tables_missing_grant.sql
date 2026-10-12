@@ -98,26 +98,35 @@ SELECT t.owner,
           AND p.table_name IS NULL
         ORDER BY t.table_name;
 
+
+SET SERVEROUTPUT ON;
+
 BEGIN
     FOR t IN (
-        SELECT t.owner,
-               t.table_name
-        FROM all_tables t
-        LEFT JOIN all_tab_privs p
-               ON p.table_schema = t.owner
-              AND p.table_name   = t.table_name
-              AND p.grantee      = 'MAXIMO_READ_ONLY'
-              AND p.privilege    = 'SELECT'
-              AND p.table_name not like 'DR$%'
-        WHERE t.owner = 'MAXIMO'
-          AND p.table_name IS NULL
-        ORDER BY t.table_name
+        SELECT a.owner,
+               a.table_name
+        FROM all_tables a
+        WHERE a.owner = 'MAXIMO'
+          AND a.table_name NOT LIKE 'DR$%'
+          AND NOT EXISTS (
+              SELECT 1
+              FROM all_tab_privs p
+              WHERE p.table_schema = a.owner
+                AND p.table_name   = a.table_name
+                AND p.grantee      = 'MAXIMO_READ_ONLY'
+                AND p.privilege    = 'SELECT'
+          )
+        ORDER BY a.table_name
     )
     LOOP
         BEGIN
             EXECUTE IMMEDIATE
                 'GRANT SELECT ON "' || t.owner || '"."' ||
                 t.table_name || '" TO MAXIMO_READ_ONLY';
+
+            DBMS_OUTPUT.PUT_LINE(
+                'GRANTED: ' || t.owner || '.' || t.table_name
+            );
 
         EXCEPTION
             WHEN OTHERS THEN
@@ -127,5 +136,7 @@ BEGIN
                 );
         END;
     END LOOP;
+END;
+/
 END;
 /
