@@ -24,40 +24,47 @@ ORDER BY 1, 2, 3, 4;
 -- Check the views that are missing the grant
 SELECT v.owner,
        v.view_name
-FROM all_views v
-LEFT JOIN all_tab_privs p
-       ON p.table_schema = v.owner
-      AND p.table_name   = v.view_name
-      AND p.grantee      = 'MAXIMO_READ_ONLY'
-      AND p.privilege    = 'SELECT'
+FROM dba_views v
+LEFT JOIN dba_tab_privs p
+       ON p.owner      = v.owner
+      AND p.table_name = v.view_name
+      AND p.grantee    = 'MAXIMO_READ_ONLY'
+      AND p.privilege  = 'SELECT'
 WHERE v.owner = 'MAXIMO'
   AND p.table_name IS NULL
 ORDER BY v.view_name;
 
 -- One executable script that finds only the MAXIMO views currently missing SELECT on MAXIMO_READ_ONLY and grants them automatically
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_sql VARCHAR2(1000);
+    v_count NUMBER := 0;
 BEGIN
-    FOR v IN (
-        SELECT v.owner,
-               v.view_name
-        FROM all_views v
-        LEFT JOIN all_tab_privs p
-               ON p.table_schema = v.owner
-              AND p.table_name   = v.view_name
-              AND p.grantee      = 'MAXIMO_READ_ONLY'
-              AND p.privilege    = 'SELECT'
+    FOR r IN (
+        SELECT v.owner, v.view_name
+        FROM dba_views v
         WHERE v.owner = 'MAXIMO'
-          AND p.table_name IS NULL
+          AND NOT EXISTS (
+              SELECT 1 
+              FROM dba_tab_privs p
+              WHERE p.owner      = v.owner
+                AND p.table_name = v.view_name
+                AND p.grantee    = 'MAXIMO_READ_ONLY'
+                AND p.privilege  = 'SELECT'
+          )
         ORDER BY v.view_name
     )
     LOOP
-        EXECUTE IMMEDIATE
-            'GRANT SELECT ON "' || v.owner || '"."' || v.view_name ||
-            '" TO MAXIMO_READ_ONLY';
-
-        DBMS_OUTPUT.PUT_LINE(
-            'Granted SELECT on ' || v.owner || '.' || v.view_name
-        );
+        v_sql := 'GRANT SELECT ON "' || r.owner || '"."' || r.view_name || '" TO MAXIMO_READ_ONLY';
+        
+        EXECUTE IMMEDIATE v_sql;
+        
+        v_count := v_count + 1;
+        DBMS_OUTPUT.PUT_LINE('Granted SELECT on ' || r.owner || '.' || r.view_name);
     END LOOP;
+    
+    DBMS_OUTPUT.PUT_LINE('Total views granted: ' || v_count);
 END;
 /
 
